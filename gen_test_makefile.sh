@@ -145,6 +145,10 @@ release:
 test:
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Test .. && make
 
+run-tests:
+	@echo "$(YELLOW)=== 运行全部测试 (make test) ===$(RESET)"
+	@$(TEST_BIN)
+
 generate: test
 	./gen_test_makefile.sh
 
