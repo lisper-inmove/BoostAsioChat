@@ -1,0 +1,8 @@
+# makefile
+
+    debug:
+    	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make
+    release:
+    	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
+    test:
+    	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Test .. && make

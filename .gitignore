@@ -1,0 +1,136 @@
+# 编译输出
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# 可执行文件（常见命名）
+*.out
+app
+test_*
+
+# 构建目录
+build/
+build-*/
+cmake-build-*/
+out/
+bin/
+lib/
+obj/
+
+# CMake 生成文件
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CMakeUserPresets.json
+compile_commands.json
+*.cmake
+!CMakeLists.txt
+!*.cmake.in
+
+# 编译器生成的依赖文件
+*.d
+*.dep
+*.P
+
+# 调试符号 / 核心转储
+*.pdb
+*.ilk
+*.suo
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+core
+core.*
+vcpkg_installed/
+
+# 日志文件
+*.log
+*.tmp
+
+# IDE / 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.user
+*.userosscache
+*.sln.docstates
+
+# 特定于 Visual Studio
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.suo
+*.userprefs
+*.pidb
+*.db
+*.dsym
+*.ncb
+*.opt
+*.plg
+*.clw
+*.aps
+*.ilk
+*.pch
+
+# 特定于 CLion / IntelliJ
+.idea/
+cmake-build-*/
+
+# 特定于 Qt Creator
+*.user.*
+*.creator*
+*.files
+*.includes
+*.config
+
+# 特定于 Eclipse
+.cproject
+.project
+.settings/
+
+# 特定于 Xcode
+*.xcodeproj
+*.xcworkspace
+*.xcuserstate
+DerivedData/
+
+# 代码覆盖率
+*.gcda
+*.gcno
+*.gcov
+coverage/
+htmlcov/
+
+# 包管理器
+vcpkg/
+conaninfo.txt
+conanbuildinfo.*
+conanbuild.*
+conanenv.*
+conan.lock
+conanbuildenv/
+CMakeUserPresets.json
+
+# 本地配置文件（可能包含敏感信息）
+*.local
+*.secret
+.env
+
+# 系统文件
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Doxygen 输出
+doc/html/
+doc/latex/
