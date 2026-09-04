@@ -136,17 +136,17 @@ done
 cat >>"$MAKEFILE" <<'EXTRA'
 # ── 额外构建目标 ──────────────────────────────────────────────────────────
 
-generate:
-	./gen_test_makefile.sh
-
 debug:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make
+	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make && cp compile_commands.json ..
 
 release:
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
 
 test:
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Test .. && make
+
+generate: test
+	./gen_test_makefile.sh
 
 EXTRA
 

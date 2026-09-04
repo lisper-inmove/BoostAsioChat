@@ -1,0 +1,6 @@
+CompileFlags:
+  Add:
+    - --gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/13
+    - -I/home/inmove/nvme1/BoostAsioChat/include
+    - -I/home/inmove/nvme1/SourceCodes/googletest/googletest/include
+    - -I/home/inmove/nvme1/SourceCodes/asio/include

@@ -1,3 +1,11 @@
 #include <asio.hpp>
 #include <iostream>
-int main() { std::cout << "Hello World"; }
+#include <utils/datetime.h>
+
+int main() {
+
+  std::string now_str = chat::datetime::now_str();
+  std::cout << now_str << "\n";
+
+  return 0;
+}
