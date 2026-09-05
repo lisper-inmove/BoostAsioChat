@@ -129,13 +129,13 @@ cat >>"$MAKEFILE" <<'EXTRA'
 # ── 额外构建目标 ──────────────────────────────────────────────────────────
 
 debug:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make && cp compile_commands.json ..
+	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make -j$(nproc) && cp compile_commands.json ..
 
 release:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
+	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc)
 
 test:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Test .. && make
+	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Test .. && make -j$(nproc)
 
 run-tests:
 	@echo "$(YELLOW)=== 运行全部测试 (make test) ===$(RESET)"

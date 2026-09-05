@@ -1,11 +1,12 @@
 message(STATUS "server.cmake included")
 
+set(THIRD_PARTY_ROOT "/home/inmove/nvme1/SourceCodes")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(TEST_NAME "ChatServerTest")
-set(GTEST_SOURCE_DIR "/home/inmove/nvme1/SourceCodes/googletest")
-set(ASIO_DIR "/home/inmove/nvme1/SourceCodes/asio")
-set(JSON_DIR "/home/inmove/nvme1/SourceCodes/json")
-set(SPDLOG_DIR "/home/inmove/nvme1/SourceCodes/spdlog")
+set(GTEST_SOURCE_DIR "${THIRD_PARTY_ROOT}/googletest")
+set(ASIO_DIR "${THIRD_PARTY_ROOT}/asio")
+set(JSON_DIR "${THIRD_PARTY_ROOT}/json")
+set(SPDLOG_DIR "${THIRD_PARTY_ROOT}/spdlog")
 # spdlog 2.0 是「编译库」模式（无 header-only），需链接预编译静态库，Debug/Release 分开
 set(SPDLOG_LIB_RELEASE "${SPDLOG_DIR}/build/libspdlog.a")
 set(SPDLOG_LIB_DEBUG "${SPDLOG_DIR}/build/libspdlog-2.0d.a")
