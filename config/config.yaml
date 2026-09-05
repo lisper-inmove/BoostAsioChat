@@ -1,3 +1,9 @@
 server:
   host: 127.0.0.1
   port: 9527
+log:
+  file: "logs/server.log"
+  level: "debug"
+  max_size: 104857600   # 100MB
+  max_files: 30
+  pattern: "[%Y-%m-%d %H:%M:%S.%e] [%l] %v"
