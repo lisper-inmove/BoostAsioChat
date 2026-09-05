@@ -1,6 +1,6 @@
 message(STATUS "server.cmake included")
 
-set(THIRD_PARTY_ROOT "/home/inmove/nvme1/SourceCodes")
+set(THIRD_PARTY_ROOT "${PROJECT_SOURCE_DIR}/third_party")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(TEST_NAME "ChatServerTest")
 set(GTEST_SOURCE_DIR "${THIRD_PARTY_ROOT}/googletest")

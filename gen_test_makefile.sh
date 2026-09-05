@@ -73,6 +73,7 @@ endif
 list:
 	@echo "$(YELLOW)=== 可用测试目标 ($(words $(TESTS)) 个) ===$(RESET)"
 	@$(foreach t,$(TESTS),echo "  make $(t)";)
+	@echo " " make run-tests  # Run all tests
 
 # ── help ───────────────────────────────────────────────────────────────────
 
