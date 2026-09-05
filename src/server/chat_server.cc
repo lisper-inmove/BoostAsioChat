@@ -5,6 +5,6 @@
 
 namespace chat::server {
 Server::Server() { LOG_INFO("Server initialized..."); }
-Server::~Server() { LOG_INFO("Server initialized..."); }
+Server::~Server() { LOG_INFO("Server stopped..."); }
 
 } // namespace chat::server
