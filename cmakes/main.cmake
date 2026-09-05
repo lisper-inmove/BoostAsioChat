@@ -11,6 +11,11 @@ set(SPDLOG_DIR "${THIRD_PARTY_ROOT}/spdlog")
 set(SPDLOG_LIB_RELEASE "${SPDLOG_DIR}/build/libspdlog.a")
 set(SPDLOG_LIB_DEBUG "${SPDLOG_DIR}/build/libspdlog-2.0d.a")
 
+# yaml-cpp 是编译库，需链接静态库；Debug 用 libyaml-cppd.a，Release 用 libyaml-cpp.a
+set(YAML_CPP_DIR "${THIRD_PARTY_ROOT}/yaml-cpp")
+set(YAML_CPP_LIB_DEBUG "${YAML_CPP_DIR}/build/libyaml-cppd.a")
+set(YAML_CPP_LIB_RELEASE "${YAML_CPP_DIR}/build/libyaml-cpp.a")
+
 # fmt 已编译安装到 /usr/local。注意：系统里还有 conda 的 fmt（11.2.0）会干扰
 # find_package 的搜索（conda 的 bin 在 PATH 里，被 CMake 推导为搜索前缀）。
 # 这里显式固定到 /usr/local 的 CMake 配置，确保用 12.2.1 而不是 conda 的旧版本。
@@ -33,7 +38,7 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Test")
   include(cmakes/googletest.cmake)
 else()
-  target_include_directories(${PROJECT_NAME} PRIVATE ${ASIO_DIR}/include ${JSON_DIR}/include ${SPDLOG_DIR}/include)
+  target_include_directories(${PROJECT_NAME} PRIVATE ${ASIO_DIR}/include ${JSON_DIR}/include ${SPDLOG_DIR}/include ${YAML_CPP_DIR}/include)
   target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 endif()
 

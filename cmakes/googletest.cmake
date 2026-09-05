@@ -21,9 +21,11 @@ target_include_directories(${TEST_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(${TEST_NAME} PRIVATE ${ASIO_DIR}/include)
 target_include_directories(${TEST_NAME} PRIVATE ${JSON_DIR}/include)
 target_include_directories(${TEST_NAME} PRIVATE ${SPDLOG_DIR}/include)
+target_include_directories(${TEST_NAME} PRIVATE ${YAML_CPP_DIR}/include)
 
 target_link_libraries(${TEST_NAME} PRIVATE fmt::fmt)
 target_link_libraries(${TEST_NAME} PRIVATE ${SPDLOG_LIB_RELEASE})
+target_link_libraries(${TEST_NAME} PRIVATE ${YAML_CPP_LIB_RELEASE})
 
 # ========== 链接库 ==========
 target_link_libraries(${TEST_NAME}
