@@ -29,7 +29,6 @@ cmake_install.cmake
 Makefile
 CMakeUserPresets.json
 compile_commands.json
-*.cmake
 !CMakeLists.txt
 !*.cmake.in
 
