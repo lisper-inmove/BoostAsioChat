@@ -34,30 +34,50 @@
 
 ### 目录结构（规划）
 
+沿用现有约定：头文件放 `include/`（以 `<子目录/头文件.h>` 命名空间路径包含），
+实现文件统一用 `.cc` 放 `src/`（匹配 `file(GLOB_RECURSE SOURCES "src/*.cc")`）。
+
 ```
-src/
-  main.cpp                    # 入口：解析参数、启动 server
+include/                        # 对外头文件（include path 根目录）
   server/
-    chat_server.{h,cpp}       # acceptor + 会话生命周期管理
-    session.{h,cpp}           # 单连接读写、心跳、消息分帧(按行)
-    room_hub.{h,cpp}          # 房间注册/创建/删除、成员列表
+    chat_server.h               # acceptor + 会话生命周期管理
+    session.h                   # 单连接读写、心跳、消息分帧（按行）
+    room_hub.h                  # 房间注册/创建/删除、成员列表
   protocol/
-    message.{h,cpp}           # JSON 消息解析与序列化
-    message_type.h            # 消息类型枚举 / 常量
+    message.h                   # JSON 消息解析与序列化
+    message_type.h              # 消息类型枚举 / 常量
   auth/
-    authenticator.h           # 认证接口
-    noop_authenticator.{h,cpp}# stub：直接放行（预留 token 字段）
-    http_authenticator.{h,cpp}# TODO：调外部 HTTP 认证服务
+    authenticator.h             # 认证接口
+    noop_authenticator.h        # stub：直接放行（预留 token 字段）
+    http_authenticator.h        # TODO：调外部 HTTP 认证服务
   storage/
-    message_store.h           # 存储接口
-    file_store.{h,cpp}        # 本地文件实现（JSON 行落盘）
-    redis_store.{h,cpp}       # TODO
-    mongo_store.{h,cpp}       # TODO
-include/                      # 对外头文件
+    message_store.h             # 存储接口
+    file_store.h                # 本地文件实现（JSON 行落盘）
+    redis_store.h               # TODO
+    mongo_store.h               # TODO
+  utils/
+    datetime.h                  # 已存在
+src/                            # 实现文件（*.cc）
+  main.cc                       # 入口：解析参数、启动 server（原 main.cpp，见下注）
+  server/
+    chat_server.cc
+    session.cc
+    room_hub.cc
+  protocol/
+    message.cc
+  auth/
+    noop_authenticator.cc
+    http_authenticator.cc
+  storage/
+    file_store.cc
 client/
-  chat_client.cpp             # 命令行参考客户端
-tests/                        # GoogleTest 单元/集成测试
+  chat_client.cpp               # 命令行参考客户端
+tests/                          # GoogleTest 单元/集成测试（*.cc）
 ```
+
+> 注：`src/main.cpp` 目前是 `.cpp`，且被 `cmakes/debug.cmake` / `release.cmake`
+> 以 `"src/main.cpp"` 显式列出。若统一为 `.cc`，需同步把这两处路径改为
+> `"src/main.cc"`；若保留 `.cpp`，则入口不参与 `src/*.cc` 的 glob，需继续显式列出。
 
 ---
 
@@ -180,9 +200,9 @@ public:
 ## 6. 待实现功能 Todo List
 
 ### 阶段一：基础框架与构建
-- [ ] 整理 CMake 依赖：引入 standalone Asio 与 `nlohmann/json`（FetchContent），保持 C++23
-- [ ] 建立目录结构（`src/server` `src/protocol` `src/auth` `src/storage` `client`）
-- [ ] 定义 `protocol::Message` 与 JSON 行编解码（`message.h/.cpp`）
+- [ ] 整理 CMake 依赖：Asio / `nlohmann/json` / gtest 均走本地 include 路径（`ASIO_DIR` / `JSON_DIR` / `GTEST_SOURCE_DIR`），保持 C++23
+- [ ] 建立目录结构（头文件 `include/{server,protocol,auth,storage}`，实现 `src/...`，`client/`）
+- [ ] 定义 `protocol::Message` 与 JSON 行编解码（`message.h` / `message.cc`）
 
 ### 阶段二：存储层（接口 + 文件实现）
 - [ ] 定义 `MessageStore` 接口（`save` / `history` / `save_offline` / `drain_offline`）
