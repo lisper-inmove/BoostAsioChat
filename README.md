@@ -14,6 +14,10 @@
 
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Test .. && make
 
+# make run-tests
+
+  运行全部单元测试
+
 # make generate
 
   generate: test

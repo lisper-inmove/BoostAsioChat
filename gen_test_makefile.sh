@@ -13,7 +13,7 @@ MAKEFILE="$SCRIPT_DIR/Makefile"
 # ── 编译（始终重新编译以确保测试列表是最新的）──────────────────────────
 
 echo "[gen] 正在编译..."
-cmake --build "$BUILD_DIR" --target ${TEST_NAME} -- -j"$(nproc)" || {
+cmake --build "$BUILD_DIR" --target all -- -j"$(nproc)" || {
   echo "[gen] 编译失败"
   exit 1
 }
@@ -81,7 +81,6 @@ help:
 	@echo "用法:"
 	@echo "  make <测试名>     运行单个测试"
 	@echo "  make list         列出所有测试"
-	@echo "  make all          运行全部测试"
 	@echo "  make build        编译测试二进制"
 	@echo "  make regen        重新生成此 Makefile"
 
@@ -91,13 +90,6 @@ help:
 build:
 	@echo "[build] 编译 $(TEST_BIN)..."
 	@cmake --build $(BUILD_DIR) --target $(TEST_NAME) -- -j$$(nproc)
-
-# ── all ────────────────────────────────────────────────────────────────────
-
-.PHONY: all
-all: build
-	@echo "$(YELLOW)=== 运行全部测试 ===$(RESET)"
-	@$(TEST_BIN)
 
 # ── regen ──────────────────────────────────────────────────────────────────
 
@@ -161,4 +153,4 @@ cat >>"$MAKEFILE" <<'FOOTER'
 FOOTER
 
 echo "[gen] Makefile 已生成: $MAKEFILE"
-echo "[gen] 可用命令: make list | make <test-name> | make all"
+echo "[gen] 可用命令: make list | make <test-name> | make run-tests"
