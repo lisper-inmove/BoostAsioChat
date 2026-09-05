@@ -1,12 +1,18 @@
 #include <server/builder.h>
+#include <server/chat_server.h>
 #include <server/config.h>
+#include <server/server_factory.h>
 #include <yaml-cpp/yaml.h>
 
 namespace chat::server::builder {
+
+Builder::~Builder() = default;
+
 bool Builder::initConfig() {
 
   YAML::Node root = YAML::LoadFile("config.yaml");
   initLog(root);
+  initServer(root);
 
   return true;
 }
@@ -29,5 +35,18 @@ bool Builder::initLog(const YAML::Node &root) {
   return true;
 }
 
-bool Builder::initServer(const YAML::Node &root) { return true; }
+bool Builder::initServer(const YAML::Node &root) {
+  auto &config = config::ServerConfig::getInstance();
+  YAML::Node server_node = root["server"];
+  auto host_node = server_node["host"];
+  auto port_node = server_node["port"];
+  auto type_node = server_node["type"];
+  config.setHost(host_node.as<std::string>());
+  config.setPort(port_node.as<uint16_t>());
+  config.setType(type_node.as<std::string>());
+
+  server_ = ServerFactory::create(config.getType());
+  return server_ != nullptr;
+}
+
 } // namespace chat::server::builder

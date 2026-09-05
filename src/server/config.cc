@@ -2,7 +2,7 @@
 
 namespace chat::server::config {
 
-LogConfig &ServerConfig::getLogConfig() {
+LogConfig &ServerConfig::getLogConfig() noexcept {
   if (!logConfig_) {
     logConfig_ = std::make_unique<LogConfig>();
   }

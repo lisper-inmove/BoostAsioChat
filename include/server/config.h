@@ -44,10 +44,18 @@ public:
 private:
   std::string host_{"127.0.0.1"};
   std::uint16_t port_{9527};
+  std::string type_{"ASIO"};
   std::unique_ptr<LogConfig> logConfig_ = nullptr;
 
 public:
-  LogConfig &getLogConfig();
+  LogConfig &getLogConfig() noexcept;
+  void setHost(const std::string host) noexcept { host_ = host; }
+  void setPort(const std::uint16_t port) noexcept { port_ = port; }
+  void setType(const std::string type) noexcept { type_ = type; }
+
+  const std::string getHost() const { return host_; }
+  const std::uint16_t getPort() const { return port_; }
+  const std::string getType() const { return type_; }
 };
 
 } // namespace chat::server::config
