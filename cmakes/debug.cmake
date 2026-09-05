@@ -9,4 +9,5 @@ add_executable(${PROJECT_NAME} "src/main.cpp" ${SOURCES})
 
 # 指定头文件搜索路径（private 表示仅该目标使用）
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${SPDLOG_LIB_DEBUG})
 

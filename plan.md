@@ -200,7 +200,8 @@ public:
 ## 6. 待实现功能 Todo List
 
 ### 阶段一：基础框架与构建
-- [ ] 整理 CMake 依赖：Asio / `nlohmann/json` / gtest 均走本地 include 路径（`ASIO_DIR` / `JSON_DIR` / `GTEST_SOURCE_DIR`），保持 C++23
+- [ ] 整理 CMake 依赖：Asio / `nlohmann/json` / `spdlog` 走本地 include（`ASIO_DIR` / `JSON_DIR` / `SPDLOG_DIR`），gtest 走 `GTEST_SOURCE_DIR`，`fmt` 用系统安装（`find_package(fmt)` 固定到 `/usr/local`，避免命中 conda 的 fmt 11.2.0），保持 C++23
+- [ ] 接入 `spdlog` 日志（启动日志、连接/断连、消息路由、错误等），`#include <spdlog/spdlog.h>`（spdlog 2.0 是编译库模式，链接 `libspdlog.a`/`libspdlog-2.0d.a` + `fmt::fmt`）
 - [ ] 建立目录结构（头文件 `include/{server,protocol,auth,storage}`，实现 `src/...`，`client/`）
 - [ ] 定义 `protocol::Message` 与 JSON 行编解码（`message.h` / `message.cc`）
 
