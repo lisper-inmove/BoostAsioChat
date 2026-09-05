@@ -54,7 +54,6 @@ vcpkg_installed/
 *.tmp
 
 # IDE / 编辑器
-.vscode/
 .idea/
 *.swp
 *.swo
