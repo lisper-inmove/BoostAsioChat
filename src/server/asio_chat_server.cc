@@ -1,6 +1,7 @@
 #include <memory>
 #include <server/chat_server.h>
 #include <server/config.h>
+#include <server/session.h>
 #include <system_error>
 #include <utils/logger.h>
 
@@ -9,6 +10,9 @@ namespace chat::server {
 ASIOServer::ASIOServer() { LOG_INFO("ASIO Server initialized..."); }
 
 void ASIOServer::start() {
+  /**
+   * 在指定的端口上启动服务
+   * */
   auto &config = config::ServerConfig::getInstance();
   const std::string host = config.getHost();
   const std::uint16_t port = config.getPort();
@@ -24,6 +28,9 @@ void ASIOServer::start() {
 }
 
 void ASIOServer::stop() {
+  /**
+   * 服务停止指令
+   * */
   if (acceptor_) {
     acceptor_->close();
   }
@@ -39,6 +46,7 @@ void ASIOServer::do_accept() {
       return;
     }
     LOG_INFO("connect initialized.");
+    std::make_shared<Session>(std::move(socket))->start();
     do_accept();
   });
 }
