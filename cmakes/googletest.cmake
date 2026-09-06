@@ -2,10 +2,10 @@ enable_testing()
 
 # add_definitions(-DUNIT_TEST)
 #
-# 可执行文件与库文件输出到 build/bin 和 build/lib
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test)
+# 可执行文件与库文件输出到构建目录根（即 build/test/ 下）
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 
 message(STATUS "Add ${TEST_NAME} googletest success")

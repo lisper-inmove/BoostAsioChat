@@ -1,46 +1,92 @@
 #!/bin/bash
 # 自动从测试二进制中提取所有 gtest 用例名，生成 Makefile
-# 用法: ./gen_test_makefile.sh [build_dir]
+# 用法: ./gen_test_makefile.sh [build_root]    默认 build_root = build/
 
 set -euo pipefail
 
-TEST_NAME=ChatServerTest
+TEST_NAME=ChatServerTest # 与 main.cmake 中的命名一致
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BUILD_DIR="${1:-$SCRIPT_DIR/build}"
-TEST_BIN="$BUILD_DIR/test/${TEST_NAME}"
+
+# build 根目录；debug / release / test 各自使用独立的子目录
+if [[ -n "${1:-}" ]]; then
+  case "$1" in
+    /*) BUILD_ROOT="$1" ;;
+    *)  BUILD_ROOT="$SCRIPT_DIR/$1" ;;
+  esac
+else
+  BUILD_ROOT="$SCRIPT_DIR/build"
+fi
+
+DEBUG_DIR="$BUILD_ROOT/debug"
+RELEASE_DIR="$BUILD_ROOT/release"
+TEST_DIR="$BUILD_ROOT/test"
+TEST_BIN="$TEST_DIR/${TEST_NAME}"
 MAKEFILE="$SCRIPT_DIR/Makefile"
 
-# ── 编译（始终重新编译以确保测试列表是最新的）──────────────────────────
+# 转义 sed 替换串中的特殊字符（& \ 以及分隔符 |）
+sed_escape() { printf '%s' "$1" | sed 's/[&\\|]/\\&/g'; }
+
+#############################################################################
+
+# ── 配置 + 编译（始终重新编译，确保测试列表最新）──────────────────────────
+
+echo "[gen] 配置 Test 构建目录: $TEST_DIR"
+cmake -S "$SCRIPT_DIR" -B "$TEST_DIR" -DCMAKE_BUILD_TYPE=Test || {
+  echo "[gen] 配置失败"
+  exit 1
+}
 
 echo "[gen] 正在编译..."
-cmake --build "$BUILD_DIR" --target all -- -j"$(nproc)" || {
+cmake --build "$TEST_DIR" --target all -- -j"$(nproc)" || {
   echo "[gen] 编译失败"
   exit 1
 }
 
-# ── 从 gtest 提取用例名 ───────────────────────────────────────────────────
+if [[ ! -x "$TEST_BIN" ]]; then
+  echo "[gen] 找不到测试二进制: $TEST_BIN"
+  echo "[gen] 请先构建 Test 类型: make test"
+  exit 1
+fi
 
 echo "[gen] 从 $TEST_BIN 提取测试列表..."
 
-# 提取套件名（第一行非缩进，去掉末尾的点）
-SUITE_NAME=$("$TEST_BIN" --gtest_list_tests 2>/dev/null | grep -v '^$' | grep -v '^  ' | head -1 | sed 's/\.$//')
+# ── 解析 gtest 列表：套件名(非缩进) / 用例名(缩进)，支持多套件 ───────────
 
-# 提取测试名（缩进的行）
-mapfile -t TEST_NAMES < <(
-  "$TEST_BIN" --gtest_list_tests 2>/dev/null |
-    grep -v '^$' |
-    grep -v '^  #' |
-    sed -n 's/^[[:space:]]\+//p'
-)
+declare -a TEST_ENTRIES=()   # 每个元素为 "suite|test"
+current_suite=""
+while IFS= read -r line; do
+  if [[ "$line" =~ ^[[:space:]] ]]; then
+    name="${line#"${line%%[![:space:]]*}"}"   # 去前导空白
+    if [[ -z "$name" || "$name" == \#* ]]; then
+      continue                                 # 跳过空行 / 注释行
+    fi
+    name="${name%% *}"                          # 去参数化用例的内联注释
+    if [[ -n "$current_suite" ]]; then
+      TEST_ENTRIES+=("$current_suite|$name")
+    fi
+  else
+    current_suite="${line%.}"                    # 套件名，去掉末尾 '.'
+  fi
+done < <("$TEST_BIN" --gtest_list_tests 2>/dev/null)
 
-if [[ ${#TEST_NAMES[@]} -eq 0 ]]; then
+if [[ ${#TEST_ENTRIES[@]} -eq 0 ]]; then
   echo "[gen] 未找到任何测试用例"
   exit 1
 fi
 
-echo "[gen] 找到 ${#TEST_NAMES[@]} 个测试用例，套件名：$SUITE_NAME"
+echo "[gen] 找到 ${#TEST_ENTRIES[@]} 个测试用例"
 
-# ── 生成 Makefile ──────────────────────────────────────────────────────────
+# 统计跨套件重名的用例，用于消除 Make 目标冲突
+declare -A NAME_COUNT=()
+for entry in "${TEST_ENTRIES[@]}"; do
+  n="${entry#*|}"
+  NAME_COUNT[$n]=$(( ${NAME_COUNT[$n]:-0} + 1 ))
+done
+
+# 把非 [A-Za-z0-9_] 替换为 _，保证 Make 目标名合法
+sanitize() { local s="$1"; echo "${s//[^A-Za-z0-9_]/_}"; }
+
+# ── 生成 Makefile 头 ───────────────────────────────────────────────────────
 
 cat >"$MAKEFILE" <<'HEADER'
 # ============================================================================
@@ -48,11 +94,13 @@ cat >"$MAKEFILE" <<'HEADER'
 #  运行 ./gen_test_makefile.sh 重新生成
 # ============================================================================
 
-TEST_NAME := ChatServerTest
-BUILD_DIR := build
-TEST_BIN  := $(BUILD_DIR)/test/$(TEST_NAME)
-SUITE     := Tester
-NO_COLOR  :=
+TEST_NAME := __TEST_NAME__
+SRC_DIR   := __SRC_DIR__
+BUILD_ROOT := __BUILD_ROOT__
+DEBUG_DIR  := $(BUILD_ROOT)/debug
+RELEASE_DIR := $(BUILD_ROOT)/release
+TEST_DIR   := $(BUILD_ROOT)/test
+TEST_BIN   := $(TEST_DIR)/$(TEST_NAME)
 
 # 检测终端是否支持颜色
 ifeq ($(shell test -t 1 && echo yes),yes)
@@ -73,7 +121,7 @@ endif
 list:
 	@echo "$(YELLOW)=== 可用测试目标 ($(words $(TESTS)) 个) ===$(RESET)"
 	@$(foreach t,$(TESTS),echo "  make $(t)";)
-	@echo " " make run-tests  # Run all tests
+	@echo "  make run-tests"
 
 # ── help ───────────────────────────────────────────────────────────────────
 
@@ -90,13 +138,13 @@ help:
 .PHONY: build
 build:
 	@echo "[build] 编译 $(TEST_BIN)..."
-	@cmake --build $(BUILD_DIR) --target $(TEST_NAME) -- -j$$(nproc)
+	@cmake --build $(TEST_DIR) --target $(TEST_NAME) -- -j$$(nproc)
 
 # ── regen ──────────────────────────────────────────────────────────────────
 
 .PHONY: regen
 regen:
-	@./gen_test_makefile.sh
+	@$(SRC_DIR)/gen_test_makefile.sh
 
 # ── 单个测试模板 ───────────────────────────────────────────────────────────
 
@@ -104,50 +152,69 @@ define TEST_TEMPLATE
 .PHONY: $(1)
 $(1): build
 	@printf "$(YELLOW)[$(1)]$(RESET) "
-	@$(TEST_BIN) --gtest_filter="$(SUITE).$(1)" \
+	@$(TEST_BIN) --gtest_filter="$(2)" \
 		&& printf "$(GREEN)PASS$(RESET)\n" \
-		|| printf "$(RED)FAIL$(RESET)\n"
+		|| { printf "$(RED)FAIL$(RESET)\n"; exit 1; }
 endef
 
 TESTS :=
 
 HEADER
 
-# 动态替换 SUITE 变量
-sed -i "s/^SUITE := .*/SUITE := $SUITE_NAME/" "$MAKEFILE"
+sed -i "s|__TEST_NAME__|$(sed_escape "$TEST_NAME")|" "$MAKEFILE"
+sed -i "s|__SRC_DIR__|$(sed_escape "$SCRIPT_DIR")|" "$MAKEFILE"
+sed -i "s|__BUILD_ROOT__|$(sed_escape "$BUILD_ROOT")|" "$MAKEFILE"
 
-# 追加每个测试的规则
-for name in "${TEST_NAMES[@]}"; do
+# ── 追加每个测试的规则（含正确的套件 filter）──────────────────────────────
+
+for entry in "${TEST_ENTRIES[@]}"; do
+  suite="${entry%%|*}"
+  name="${entry#*|}"
+  if [[ ${NAME_COUNT[$name]} -gt 1 ]]; then
+    target="$(sanitize "$suite")__${name}"   # 跨套件重名：加套件前缀
+  else
+    target="$name"
+  fi
+  filter="${suite}.${name}"
   cat >>"$MAKEFILE" <<EOF
-TESTS += $name
-\$(eval \$(call TEST_TEMPLATE,$name))
+TESTS += $target
+\$(eval \$(call TEST_TEMPLATE,$target,$filter))
 
 EOF
 done
 
-# ===== 额外构建目标 =====
+# ── 额外构建目标（debug/release/test 各自独立构建目录）────────────────────
+
 cat >>"$MAKEFILE" <<'EXTRA'
-# ── 额外构建目标 ──────────────────────────────────────────────────────────
+# ── 构建类型目标 ───────────────────────────────────────────────────────────
 
+.PHONY: debug
 debug:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make -j$(nproc) && cp compile_commands.json ..
+	cmake -S $(SRC_DIR) -B $(DEBUG_DIR) -DCMAKE_BUILD_TYPE=Debug \
+		&& cmake --build $(DEBUG_DIR) -j$$(nproc) \
+		&& cp $(DEBUG_DIR)/compile_commands.json $(SRC_DIR)/
 
+.PHONY: release
 release:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc)
+	cmake -S $(SRC_DIR) -B $(RELEASE_DIR) -DCMAKE_BUILD_TYPE=Release \
+		&& cmake --build $(RELEASE_DIR) -j$$(nproc)
 
+.PHONY: test
 test:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Test .. && make -j$(nproc)
+	cmake -S $(SRC_DIR) -B $(TEST_DIR) -DCMAKE_BUILD_TYPE=Test \
+		&& cmake --build $(TEST_DIR) -j$$(nproc)
 
+.PHONY: run-tests
 run-tests:
-	@echo "$(YELLOW)=== 运行全部测试 (make test) ===$(RESET)"
+	@echo "$(YELLOW)=== 运行全部测试 ===$(RESET)"
 	@$(TEST_BIN)
 
+.PHONY: generate
 generate: test
-	./gen_test_makefile.sh
+	$(SRC_DIR)/gen_test_makefile.sh
 
 EXTRA
 
-# 追加结尾注释
 cat >>"$MAKEFILE" <<'FOOTER'
 
 # ============================================================================
